@@ -356,7 +356,7 @@ func testWithoutSpecificBuilderRequirement(
 				})
 			})
 
-			when("--no-pull", func() {
+			when("--pull-policy=never", func() {
 				it("should use local image", func() {
 					nestedPackage := packageBuildpackLocally(simplePackageConfigPath)
 					defer h.DockerRmi(dockerCli, nestedPackage)
@@ -367,7 +367,8 @@ func testWithoutSpecificBuilderRequirement(
 					pack.JustRunSuccessfully(
 						"package-buildpack", packageName,
 						"-c", aggregatePackageToml,
-						"--no-pull",
+						"--pull-policy",
+						"never",
 					)
 
 					_, _, err := dockerCli.ImageInspectWithRaw(context.Background(), packageName)
@@ -385,7 +386,8 @@ func testWithoutSpecificBuilderRequirement(
 					output, err := pack.Run(
 						"package-buildpack", packageName,
 						"-c", aggregatePackageToml,
-						"--no-pull",
+						"--pull-policy",
+						"never",
 					)
 					assert.NotNil(err)
 					assertions.NewOutputAssertionManager(t, output).ReportsImageNotExistingOnDaemon(nestedPackage)
@@ -1546,7 +1548,8 @@ include = [ "*.jar", "media/mountain.jpg", "media/person.png" ]
 						"-p", filepath.Join("testdata", "mock_app"),
 						"--builder", builderName,
 						"--run-image", runBefore,
-						"--no-pull",
+						"--pull-policy",
+						"never",
 					)
 					origID = h.ImageID(t, repoName)
 					assertMockAppRunsWithOutput(t,
@@ -1584,7 +1587,8 @@ include = [ "*.jar", "media/mountain.jpg", "media/person.png" ]
 							output := pack.RunSuccessfully(
 								"rebase", repoName,
 								"--run-image", runAfter,
-								"--no-pull",
+								"--pull-policy",
+								"never",
 							)
 
 							assert.Contains(output, fmt.Sprintf("Successfully rebased image '%s'", repoName))
@@ -1611,7 +1615,7 @@ include = [ "*.jar", "media/mountain.jpg", "media/person.png" ]
 						})
 
 						it("prefers the local mirror", func() {
-							output := pack.RunSuccessfully("rebase", repoName, "--no-pull")
+							output := pack.RunSuccessfully("rebase", repoName, "--pull-policy", "never")
 
 							assertOutput := assertions.NewOutputAssertionManager(t, output)
 							assertOutput.ReportsSelectingRunImageMirrorFromLocalConfig(localRunImageMirror)
@@ -1634,7 +1638,7 @@ include = [ "*.jar", "media/mountain.jpg", "media/person.png" ]
 						})
 
 						it("selects the best mirror", func() {
-							output := pack.RunSuccessfully("rebase", repoName, "--no-pull")
+							output := pack.RunSuccessfully("rebase", repoName, "--pull-policy", "never")
 
 							assertOutput := assertions.NewOutputAssertionManager(t, output)
 							assertOutput.ReportsSelectingRunImageMirror(runImageMirror)
